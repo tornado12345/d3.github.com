@@ -1,4 +1,4 @@
-// https://d3js.org/d3-geo-projection/ Version 2.1.0. Copyright 2017 Mike Bostock.
+// https://d3js.org/d3-geo-projection/ Version 2.4.0. Copyright 2018 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-geo'), require('d3-array')) :
 	typeof define === 'function' && define.amd ? define(['exports', 'd3-geo', 'd3-array'], factory) :
@@ -309,8 +309,8 @@ function berghausRaw(lobes) {
       var theta = atan2(p[1], p[0]),
           r = sqrt(p[0] * p[0] + p[1] * p[1]),
           theta0 = k * round((theta - halfPi) / k) + halfPi,
-          α = atan2(sin(theta -= theta0), 2 - cos(theta)); // angle relative to lobe end
-      theta = theta0 + asin(pi / r * sin(α)) - α;
+          alpha = atan2(sin(theta -= theta0), 2 - cos(theta)); // angle relative to lobe end
+      theta = theta0 + asin(pi / r * sin(alpha)) - alpha;
       p[0] = r * cos(theta);
       p[1] = r * sin(theta);
     }
@@ -324,8 +324,8 @@ function berghausRaw(lobes) {
           theta0 = k * round((theta - halfPi) / k) + halfPi,
           s = theta > theta0 ? -1 : 1,
           A = r * cos(theta0 - theta),
-          cotα = 1 / tan(s * acos((A - pi) / sqrt(pi * (pi - 2 * A) + r * r)));
-      theta = theta0 + 2 * atan((cotα + s * sqrt(cotα * cotα - 3)) / 3);
+          cotAlpha = 1 / tan(s * acos((A - pi) / sqrt(pi * (pi - 2 * A) + r * r)));
+      theta = theta0 + 2 * atan((cotAlpha + s * sqrt(cotAlpha * cotAlpha - 3)) / 3);
       x = r * cos(theta), y = r * sin(theta);
     }
     return d3Geo.geoAzimuthalEquidistantRaw.invert(x, y);
@@ -373,6 +373,95 @@ var berghaus = function() {
       .scale(87.8076)
       .center([0, 17.1875])
       .clipAngle(180 - 1e-3);
+};
+
+function hammerRaw(A, B) {
+  if (arguments.length < 2) B = A;
+  if (B === 1) return d3Geo.geoAzimuthalEqualAreaRaw;
+  if (B === Infinity) return hammerQuarticAuthalicRaw;
+
+  function forward(lambda, phi) {
+    var coordinates = d3Geo.geoAzimuthalEqualAreaRaw(lambda / B, phi);
+    coordinates[0] *= A;
+    return coordinates;
+  }
+
+  forward.invert = function(x, y) {
+    var coordinates = d3Geo.geoAzimuthalEqualAreaRaw.invert(x / A, y);
+    coordinates[0] *= B;
+    return coordinates;
+  };
+
+  return forward;
+}
+
+function hammerQuarticAuthalicRaw(lambda, phi) {
+  return [
+    lambda * cos(phi) / cos(phi /= 2),
+    2 * sin(phi)
+  ];
+}
+
+hammerQuarticAuthalicRaw.invert = function(x, y) {
+  var phi = 2 * asin(y / 2);
+  return [
+    x * cos(phi / 2) / cos(phi),
+    phi
+  ];
+};
+
+var hammer = function() {
+  var B = 2,
+      m = d3Geo.geoProjectionMutator(hammerRaw),
+      p = m(B);
+
+  p.coefficient = function(_) {
+    if (!arguments.length) return B;
+    return m(B = +_);
+  };
+
+  return p
+    .scale(169.529);
+};
+
+// Bertin 1953 as a modified Briesemeister
+// https://bl.ocks.org/Fil/5b9ee9636dfb6ffa53443c9006beb642
+function bertin1953Raw() {
+  var hammer$$1 = hammerRaw(1.68, 2),
+      fu = 1.4, k = 12;
+
+  return function(lambda, phi) {
+
+    if (lambda + phi < -fu) {
+      var u = (lambda - phi + 1.6) * (lambda + phi + fu) / 8;
+      lambda += u;
+      phi -= 0.8 * u * sin(phi + pi / 2);
+    }
+
+    var r = hammer$$1(lambda, phi);
+
+    var d = (1 - cos(lambda * phi)) / k;
+
+    if (r[1] < 0) {
+      r[0] *= 1 + d;
+    }
+    if (r[1] > 0) {
+      r[1] *= 1 + d / 1.5 * r[0] * r[0];
+    }
+
+    return r;
+  };
+}
+
+var bertin = function() {
+  var p = d3Geo.geoProjection(bertin1953Raw());
+
+  p.rotate([-16.5, -42]);
+  delete p.rotate;
+
+  return p
+    .scale(176.57)
+    .center([7.93, 0.09]);
 };
 
 function mollweideBromleyTheta(cp, phi) {
@@ -655,8 +744,8 @@ function craigRaw(phi0) {
 
   forward.invert = tanPhi0 ? function(x, y) {
     if (x) y *= sin(x) / x;
-    var cosλ = cos(x);
-    return [x, 2 * atan2(sqrt(cosλ * cosλ + tanPhi0 * tanPhi0 - y * y) - cosλ, tanPhi0 - y)];
+    var cosLambda = cos(x);
+    return [x, 2 * atan2(sqrt(cosLambda * cosLambda + tanPhi0 * tanPhi0 - y * y) - cosLambda, tanPhi0 - y)];
   } : function(x, y) {
     return [x, asin(x ? y * tan(x) / x : y)];
   };
@@ -1010,6 +1099,7 @@ var gilbert = function(projectionType) {
     return arguments.length ? (projection.center(gilbertForward(_)), gilbert) : gilbertInvert(projection.center());
   };
 
+  property("angle");
   property("clipAngle");
   property("clipExtent");
   property("scale");
@@ -1317,6 +1407,8 @@ function gringortenRaw(lambda, phi) {
 }
 
 gringortenRaw.invert = function(x, y) {
+  if (abs(x) > 1) x = sign(x) * 2 - x;
+  if (abs(y) > 1) y = sign(y) * 2 - y;
   var sx = sign(x),
       sy = sign(y),
       x0 = -sx * x,
@@ -1607,55 +1699,6 @@ guyouRaw.invert = function(x, y) {
 var guyou = function() {
   return d3Geo.geoProjection(squareRaw(guyouRaw))
       .scale(151.496);
-};
-
-function hammerRaw(A, B) {
-  if (arguments.length < 2) B = A;
-  if (B === 1) return d3Geo.geoAzimuthalEqualAreaRaw;
-  if (B === Infinity) return hammerQuarticAuthalicRaw;
-
-  function forward(lambda, phi) {
-    var coordinates = d3Geo.geoAzimuthalEqualAreaRaw(lambda / B, phi);
-    coordinates[0] *= A;
-    return coordinates;
-  }
-
-  forward.invert = function(x, y) {
-    var coordinates = d3Geo.geoAzimuthalEqualAreaRaw.invert(x / A, y);
-    coordinates[0] *= B;
-    return coordinates;
-  };
-
-  return forward;
-}
-
-function hammerQuarticAuthalicRaw(lambda, phi) {
-  return [
-    lambda * cos(phi) / cos(phi /= 2),
-    2 * sin(phi)
-  ];
-}
-
-hammerQuarticAuthalicRaw.invert = function(x, y) {
-  var phi = 2 * asin(y / 2);
-  return [
-    x * cos(phi / 2) / cos(phi),
-    phi
-  ];
-};
-
-var hammer = function() {
-  var B = 2,
-      m = d3Geo.geoProjectionMutator(hammerRaw),
-      p = m(B);
-
-  p.coefficient = function(_) {
-    if (!arguments.length) return B;
-    return m(B = +_);
-  };
-
-  return p
-    .scale(169.529);
 };
 
 function hammerRetroazimuthalRaw(phi0) {
@@ -1949,6 +1992,168 @@ var homolosine = function() {
       .scale(152.63);
 };
 
+// https://github.com/scijs/integrate-adaptive-simpson
+
+// This algorithm adapted from pseudocode in:
+// http://www.math.utk.edu/~ccollins/refs/Handouts/rich.pdf
+function adsimp (f, a, b, fa, fm, fb, V0, tol, maxdepth, depth, state) {
+  if (state.nanEncountered) {
+    return NaN;
+  }
+
+  var h, f1, f2, sl, sr, s2, m, V1, V2, err;
+
+  h = b - a;
+  f1 = f(a + h * 0.25);
+  f2 = f(b - h * 0.25);
+
+  // Simple check for NaN:
+  if (isNaN(f1)) {
+    state.nanEncountered = true;
+    return;
+  }
+
+  // Simple check for NaN:
+  if (isNaN(f2)) {
+    state.nanEncountered = true;
+    return;
+  }
+
+  sl = h * (fa + 4 * f1 + fm) / 12;
+  sr = h * (fm + 4 * f2 + fb) / 12;
+  s2 = sl + sr;
+  err = (s2 - V0) / 15;
+
+  if (depth > maxdepth) {
+    state.maxDepthCount++;
+    return s2 + err;
+  } else if (Math.abs(err) < tol) {
+    return s2 + err;
+  } else {
+    m = a + h * 0.5;
+
+    V1 = adsimp(f, a, m, fa, f1, fm, sl, tol * 0.5, maxdepth, depth + 1, state);
+
+    if (isNaN(V1)) {
+      state.nanEncountered = true;
+      return NaN;
+    }
+
+    V2 = adsimp(f, m, b, fm, f2, fb, sr, tol * 0.5, maxdepth, depth + 1, state);
+
+    if (isNaN(V2)) {
+      state.nanEncountered = true;
+      return NaN;
+    }
+
+    return V1 + V2;
+  }
+}
+
+function integrate (f, a, b, tol, maxdepth) {
+  var state = {
+    maxDepthCount: 0,
+    nanEncountered: false
+  };
+
+  if (tol === undefined) {
+    tol = 1e-8;
+  }
+  if (maxdepth === undefined) {
+    maxdepth = 20;
+  }
+
+  var fa = f(a);
+  var fm = f(0.5 * (a + b));
+  var fb = f(b);
+
+  var V0 = (fa + 4 * fm + fb) * (b - a) / 6;
+
+  var result = adsimp(f, a, b, fa, fm, fb, V0, tol, maxdepth, 1, state);
+
+/*
+  if (state.maxDepthCount > 0 && console && console.warn) {
+    console.warn('integrate-adaptive-simpson: Warning: maximum recursion depth (' + maxdepth + ') reached ' + state.maxDepthCount + ' times');
+  }
+
+  if (state.nanEncountered && console && console.warn) {
+    console.warn('integrate-adaptive-simpson: Warning: NaN encountered. Halting early.');
+  }
+*/
+
+  return result;
+}
+
+function hyperellipticalRaw(alpha, k, gamma) {
+
+  function elliptic (f) {
+    return alpha + (1 - alpha) * pow(1 - pow(f, k), 1 / k);
+  }
+
+  function z(f) {
+    return integrate(elliptic, 0, f, 1e-4);
+  }
+
+  var G = 1 / z(1),
+      n = 1000,
+      m = (1 + 1e-8) * G,
+      approx = [];
+  for (var i = 0; i <= n; i++)
+      approx.push(z(i / n) * m);
+
+  function Y(sinphi) {
+    var rmin = 0, rmax = n, r = n >> 1;
+    do {
+      if (approx[r] > sinphi) rmax = r; else rmin = r;
+      r = (rmin + rmax) >> 1;
+    } while (r > rmin);
+    var u = approx[r + 1] - approx[r];
+    if (u) u = (sinphi - approx[r + 1]) / u;
+    return (r + 1 + u) / n;
+  }
+
+  var ratio = 2 * Y(1) / pi * G / gamma;
+
+  var forward = function(lambda, phi) {
+    var y = Y(abs(sin(phi))),
+        x = elliptic(y) * lambda;
+    y /= ratio;
+    return [ x, (phi >= 0) ? y : -y ];
+  };
+
+  forward.invert = function(x, y) {
+    var phi;
+    y *= ratio;
+    if (abs(y) < 1) phi = sign(y) * asin(z(abs(y)) * G);
+    return [ x / elliptic(abs(y)), phi ];
+  };
+
+  return forward;
+}
+
+var hyperelliptical = function() {
+  var alpha = 0,
+      k = 2.5,
+      gamma = 1.183136, // affine = sqrt(2 * gamma / pi) = 0.8679
+      m = d3Geo.geoProjectionMutator(hyperellipticalRaw),
+      p = m(alpha, k, gamma);
+
+  p.alpha = function(_) {
+    return arguments.length ? m(alpha = +_, k, gamma) : alpha;
+  };
+
+  p.k = function(_) {
+    return arguments.length ? m(alpha, k = +_, gamma) : k;
+  };
+
+  p.gamma = function(_) {
+    return arguments.length ? m(alpha, k, gamma = +_) : gamma;
+  };
+
+  return p
+      .scale(152.63);
+};
+
 function pointEqual(a, b) {
   return abs(a[0] - b[0]) < epsilon && abs(a[1] - b[1]) < epsilon;
 }
@@ -2012,29 +2217,7 @@ function interpolateSphere(lobes) {
 }
 
 var interrupt = function(project, lobes) {
-  var sphere = interpolateSphere(lobes);
-
-  lobes = lobes.map(function(lobe) {
-    return lobe.map(function(l) {
-      return [
-        [l[0][0] * radians, l[0][1] * radians],
-        [l[1][0] * radians, l[1][1] * radians],
-        [l[2][0] * radians, l[2][1] * radians]
-      ];
-    });
-  });
-
-  var bounds = lobes.map(function(lobe) {
-    return lobe.map(function(l) {
-      var x0 = project(l[0][0], l[0][1])[0],
-          x1 = project(l[2][0], l[2][1])[0],
-          y0 = project(l[1][0], l[0][1])[1],
-          y1 = project(l[1][0], l[1][1])[1],
-          t;
-      if (y0 > y1) t = y0, y0 = y1, y1 = t;
-      return [[x0, y0], [x1, y1]];
-    });
-  });
+  var sphere, bounds;
 
   function forward(lambda, phi) {
     var sign$$1 = phi < 0 ? -1 : +1, lobe = lobes[+(phi < 0)];
@@ -2068,6 +2251,46 @@ var interrupt = function(project, lobes) {
     rotateStream.sphere = function() { d3Geo.geoStream(sphere, sphereStream); };
     return rotateStream;
   };
+  
+  p.lobes = function(_) {
+    if (!arguments.length) return lobes.map(function(lobe) {
+      return lobe.map(function(l) {
+        return [
+          [l[0][0] * degrees, l[0][1] * degrees],
+          [l[1][0] * degrees, l[1][1] * degrees],
+          [l[2][0] * degrees, l[2][1] * degrees]
+        ];
+      });
+    });
+
+    sphere = interpolateSphere(_);
+
+    lobes = _.map(function(lobe) {
+      return lobe.map(function(l) {
+        return [
+          [l[0][0] * radians, l[0][1] * radians],
+          [l[1][0] * radians, l[1][1] * radians],
+          [l[2][0] * radians, l[2][1] * radians]
+        ];
+      });
+    });
+
+    bounds = lobes.map(function(lobe) {
+      return lobe.map(function(l) {
+        var x0 = project(l[0][0], l[0][1])[0],
+            x1 = project(l[2][0], l[2][1])[0],
+            y0 = project(l[1][0], l[0][1])[1],
+            y1 = project(l[1][0], l[1][1])[1],
+            t;
+        if (y0 > y1) t = y0, y0 = y1, y1 = t;
+        return [[x0, y0], [x1, y1]];
+      });
+    });
+
+    return p;
+  };
+
+  if (lobes != null) p.lobes(lobes);
 
   return p;
 };
@@ -2311,8 +2534,9 @@ littrowRaw.invert = function(x, y) {
   var x2 = x * x,
       y2 = y * y,
       y2_1 = y2 + 1,
+      x2_y2_1 = x2 + y2_1,
       cosPhi = x
-          ? sqrt1_2 * sqrt((y2_1 - sqrt(x2 * x2 + 2 * x2 * (y2 - 1) + y2_1 * y2_1)) / x2 + 1)
+          ? sqrt1_2 * sqrt((x2_y2_1 - sqrt(x2_y2_1 * x2_y2_1 - 4 * x2)) / x2)
           : 1 / sqrt(y2_1);
   return [
     asin(x * cosPhi),
@@ -2570,32 +2794,6 @@ var mtFlatPolarSinusoidal = function() {
       .scale(166.518);
 };
 
-function naturalEarthRaw(lambda, phi) {
-  var phi2 = phi * phi, phi4 = phi2 * phi2;
-  return [
-    lambda * (0.8707 - 0.131979 * phi2 + phi4 * (-0.013791 + phi4 * (0.003971 * phi2 - 0.001529 * phi4))),
-    phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4)))
-  ];
-}
-
-naturalEarthRaw.invert = function(x, y) {
-  var phi = y, i = 25, delta;
-  do {
-    var phi2 = phi * phi, phi4 = phi2 * phi2;
-    phi -= delta = (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /
-        (1.007226 + phi2 * (0.015085 * 3 + phi4 * (-0.044475 * 7 + 0.028874 * 9 * phi2 - 0.005916 * 11 * phi4)));
-  } while (abs(delta) > epsilon && --i > 0);
-  return [
-    x / (0.8707 + (phi2 = phi * phi) * (-0.131979 + phi2 * (-0.013791 + phi2 * phi2 * phi2 * (0.003971 - 0.001529 * phi2)))),
-    phi
-  ];
-};
-
-var naturalEarth = function() {
-  return d3Geo.geoProjection(naturalEarthRaw)
-      .scale(175.295);
-};
-
 function naturalEarth2Raw(lambda, phi) {
   var phi2 = phi * phi, phi4 = phi2 * phi2, phi6 = phi2 * phi4;
   return [
@@ -2787,16 +2985,10 @@ function angle$1(a, b) {
 //    augmented with a transform matrix.
 //  * face: a function that returns the appropriate node for a given {lambda, phi}
 //    point (radians).
-//  * r: rotation angle for final polyhedral net.  Defaults to -pi / 6 (for
-//    butterflies).
+//  * r: rotation angle for root face [deprecated by .angle()].
 var polyhedral = function(root, face, r) {
 
-  r = r == null ? -pi / 6 : r; // TODO automate
-
-  recurse(root, {transform: [
-    cos(r), sin(r), 0,
-    -sin(r), cos(r), 0
-  ]});
+  recurse(root, {transform: null});
 
   function recurse(node, parent) {
     node.edges = faceEdges(node.face);
@@ -2889,7 +3081,7 @@ var polyhedral = function(root, face, r) {
     return rotateStream;
   };
 
-  return proj;
+  return proj.angle(r == null ? -30 : r * degrees);
 };
 
 function outline(stream, node, parent) {
@@ -3003,6 +3195,7 @@ var butterfly = function(faceProjection) {
             : lambda < pi / 2 ? phi < 0 ? 3 : 1
             : phi < 0 ? 7 : 5];
       })
+      .angle(-30)
       .scale(101.858)
       .center([0, 45]);
 };
@@ -3040,6 +3233,7 @@ var collignon$1 = function(faceProjection) {
             : lambda < pi / 2 ? phi < 0 ? 3 : 1
             : phi < 0 ? 7 : 5];
       })
+      .angle(-30)
       .scale(121.906)
       .center([0, 48.5904]);
 };
@@ -3125,6 +3319,7 @@ var waterman = function(faceProjection) {
   }
 
   return polyhedral(faces[0], face)
+      .angle(-30)
       .scale(110.625)
       .center([0,45]);
 };
@@ -3339,8 +3534,8 @@ var quincuncial = function(project) {
     if (!t) {
       var d = dx * sqrt1_2,
           s = x > 0 ^ y > 0 ? -1 : 1,
-          x1 = -s * (x0 + (y > 0 ? 1 : -1) * d),
-          y1 = -s * (y0 + (x > 0 ? 1 : -1) * d);
+          x1 = -s * x0 + (y > 0 ? 1 : -1) * d,
+          y1 = -s * y0 + (x > 0 ? 1 : -1) * d;
       x = (-x1 - y1) * sqrt1_2;
       y = (x1 - y1) * sqrt1_2;
     }
@@ -4254,6 +4449,8 @@ exports.geoBaker = baker;
 exports.geoBakerRaw = bakerRaw;
 exports.geoBerghaus = berghaus;
 exports.geoBerghausRaw = berghausRaw;
+exports.geoBertin1953 = bertin;
+exports.geoBertin1953Raw = bertin1953Raw;
 exports.geoBoggs = boggs;
 exports.geoBoggsRaw = boggsRaw;
 exports.geoBonne = bonne;
@@ -4320,6 +4517,8 @@ exports.geoHill = hill;
 exports.geoHillRaw = hillRaw;
 exports.geoHomolosine = homolosine;
 exports.geoHomolosineRaw = homolosineRaw;
+exports.geoHyperelliptical = hyperelliptical;
+exports.geoHyperellipticalRaw = hyperellipticalRaw;
 exports.geoInterrupt = interrupt;
 exports.geoInterruptedBoggs = boggs$1;
 exports.geoInterruptedHomolosine = homolosine$1;
@@ -4356,8 +4555,8 @@ exports.geoMtFlatPolarQuartic = mtFlatPolarQuartic;
 exports.geoMtFlatPolarQuarticRaw = mtFlatPolarQuarticRaw;
 exports.geoMtFlatPolarSinusoidal = mtFlatPolarSinusoidal;
 exports.geoMtFlatPolarSinusoidalRaw = mtFlatPolarSinusoidalRaw;
-exports.geoNaturalEarth = naturalEarth;
-exports.geoNaturalEarthRaw = naturalEarthRaw;
+exports.geoNaturalEarth = d3Geo.geoNaturalEarth1;
+exports.geoNaturalEarthRaw = d3Geo.geoNaturalEarth1Raw;
 exports.geoNaturalEarth2 = naturalEarth2;
 exports.geoNaturalEarth2Raw = naturalEarth2Raw;
 exports.geoNellHammer = nellHammer;
