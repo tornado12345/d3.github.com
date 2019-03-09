@@ -1,8 +1,8 @@
-// https://d3js.org/d3-collection/ Version 1.0.4. Copyright 2017 Mike Bostock.
+// https://d3js.org/d3-collection/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.d3 = global.d3 || {})));
+typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+typeof define === 'function' && define.amd ? define(['exports'], factory) :
+(factory((global.d3 = global.d3 || {})));
 }(this, (function (exports) { 'use strict';
 
 var prefix = "$";
@@ -79,7 +79,7 @@ function map(object, f) {
   return map;
 }
 
-var nest = function() {
+function nest() {
   var keys = [],
       sortKeys = [],
       sortValues,
@@ -133,7 +133,7 @@ var nest = function() {
     sortValues: function(order) { sortValues = order; return nest; },
     rollup: function(f) { rollup = f; return nest; }
   };
-};
+}
 
 function createObject() {
   return {};
@@ -187,23 +187,23 @@ function set(object, f) {
   return set;
 }
 
-var keys = function(map) {
+function keys(map) {
   var keys = [];
   for (var key in map) keys.push(key);
   return keys;
-};
+}
 
-var values = function(map) {
+function values(map) {
   var values = [];
   for (var key in map) values.push(map[key]);
   return values;
-};
+}
 
-var entries = function(map) {
+function entries(map) {
   var entries = [];
   for (var key in map) entries.push({key: key, value: map[key]});
   return entries;
-};
+}
 
 exports.nest = nest;
 exports.set = set;

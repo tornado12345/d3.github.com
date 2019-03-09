@@ -1,21 +1,21 @@
-// https://d3js.org/d3-axis/ Version 1.0.8. Copyright 2017 Mike Bostock.
+// https://d3js.org/d3-axis/ v1.0.12 Copyright 2018 Mike Bostock
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.d3 = global.d3 || {})));
+typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+typeof define === 'function' && define.amd ? define(['exports'], factory) :
+(factory((global.d3 = global.d3 || {})));
 }(this, (function (exports) { 'use strict';
 
 var slice = Array.prototype.slice;
 
-var identity = function(x) {
+function identity(x) {
   return x;
-};
+}
 
-var top = 1;
-var right = 2;
-var bottom = 3;
-var left = 4;
-var epsilon = 1e-6;
+var top = 1,
+    right = 2,
+    bottom = 3,
+    left = 4,
+    epsilon = 1e-6;
 
 function translateX(x) {
   return "translate(" + (x + 0.5) + ",0)";
@@ -72,16 +72,16 @@ function axis(orient, scale) {
 
     path = path.merge(path.enter().insert("path", ".tick")
         .attr("class", "domain")
-        .attr("stroke", "#000"));
+        .attr("stroke", "currentColor"));
 
     tick = tick.merge(tickEnter);
 
     line = line.merge(tickEnter.append("line")
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr(x + "2", k * tickSizeInner));
 
     text = text.merge(tickEnter.append("text")
-        .attr("fill", "#000")
+        .attr("fill", "currentColor")
         .attr(x, k * spacing)
         .attr("dy", orient === top ? "0em" : orient === bottom ? "0.71em" : "0.32em"));
 
@@ -104,8 +104,8 @@ function axis(orient, scale) {
 
     path
         .attr("d", orient === left || orient == right
-            ? "M" + k * tickSizeOuter + "," + range0 + "H0.5V" + range1 + "H" + k * tickSizeOuter
-            : "M" + range0 + "," + k * tickSizeOuter + "V0.5H" + range1 + "V" + k * tickSizeOuter);
+            ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H0.5V" + range1 + "H" + k * tickSizeOuter : "M0.5," + range0 + "V" + range1)
+            : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V0.5H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + ",0.5H" + range1));
 
     tick
         .attr("opacity", 1)

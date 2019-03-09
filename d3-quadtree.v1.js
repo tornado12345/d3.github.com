@@ -1,15 +1,15 @@
-// https://d3js.org/d3-quadtree/ Version 1.0.3. Copyright 2017 Mike Bostock.
+// https://d3js.org/d3-quadtree/ v1.0.6 Copyright 2019 Mike Bostock
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.d3 = global.d3 || {})));
+typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+typeof define === 'function' && define.amd ? define(['exports'], factory) :
+(factory((global.d3 = global.d3 || {})));
 }(this, (function (exports) { 'use strict';
 
-var tree_add = function(d) {
+function tree_add(d) {
   var x = +this._x.call(null, d),
       y = +this._y.call(null, d);
   return add(this.cover(x, y), x, y, d);
-};
+}
 
 function add(tree, x, y, d) {
   if (isNaN(x) || isNaN(y)) return tree; // ignore invalid points
@@ -76,9 +76,8 @@ function addAll(data) {
     if (y > y1) y1 = y;
   }
 
-  // If there were no (valid) points, inherit the existing extent.
-  if (x1 < x0) x0 = this._x0, x1 = this._x1;
-  if (y1 < y0) y0 = this._y0, y1 = this._y1;
+  // If there were no (valid) points, abort.
+  if (x0 > x1 || y0 > y1) return this;
 
   // Expand the tree to cover the new points.
   this.cover(x0, y0).cover(x1, y1);
@@ -91,7 +90,7 @@ function addAll(data) {
   return this;
 }
 
-var tree_cover = function(x, y) {
+function tree_cover(x, y) {
   if (isNaN(x = +x) || isNaN(y = +y)) return this; // ignore invalid points
 
   var x0 = this._x0,
@@ -108,71 +107,56 @@ var tree_cover = function(x, y) {
   }
 
   // Otherwise, double repeatedly to cover.
-  else if (x0 > x || x > x1 || y0 > y || y > y1) {
+  else {
     var z = x1 - x0,
         node = this._root,
         parent,
         i;
 
-    switch (i = (y < (y0 + y1) / 2) << 1 | (x < (x0 + x1) / 2)) {
-      case 0: {
-        do parent = new Array(4), parent[i] = node, node = parent;
-        while (z *= 2, x1 = x0 + z, y1 = y0 + z, x > x1 || y > y1);
-        break;
-      }
-      case 1: {
-        do parent = new Array(4), parent[i] = node, node = parent;
-        while (z *= 2, x0 = x1 - z, y1 = y0 + z, x0 > x || y > y1);
-        break;
-      }
-      case 2: {
-        do parent = new Array(4), parent[i] = node, node = parent;
-        while (z *= 2, x1 = x0 + z, y0 = y1 - z, x > x1 || y0 > y);
-        break;
-      }
-      case 3: {
-        do parent = new Array(4), parent[i] = node, node = parent;
-        while (z *= 2, x0 = x1 - z, y0 = y1 - z, x0 > x || y0 > y);
-        break;
+    while (x0 > x || x >= x1 || y0 > y || y >= y1) {
+      i = (y < y0) << 1 | (x < x0);
+      parent = new Array(4), parent[i] = node, node = parent, z *= 2;
+      switch (i) {
+        case 0: x1 = x0 + z, y1 = y0 + z; break;
+        case 1: x0 = x1 - z, y1 = y0 + z; break;
+        case 2: x1 = x0 + z, y0 = y1 - z; break;
+        case 3: x0 = x1 - z, y0 = y1 - z; break;
       }
     }
 
     if (this._root && this._root.length) this._root = node;
   }
 
-  // If the quadtree covers the point already, just return.
-  else return this;
-
   this._x0 = x0;
   this._y0 = y0;
   this._x1 = x1;
   this._y1 = y1;
   return this;
-};
+}
 
-var tree_data = function() {
+function tree_data() {
   var data = [];
   this.visit(function(node) {
     if (!node.length) do data.push(node.data); while (node = node.next)
   });
   return data;
-};
+}
 
-var tree_extent = function(_) {
+function tree_extent(_) {
   return arguments.length
       ? this.cover(+_[0][0], +_[0][1]).cover(+_[1][0], +_[1][1])
       : isNaN(this._x0) ? undefined : [[this._x0, this._y0], [this._x1, this._y1]];
-};
+}
 
-var Quad = function(node, x0, y0, x1, y1) {
+function Quad(node, x0, y0, x1, y1) {
   this.node = node;
   this.x0 = x0;
   this.y0 = y0;
   this.x1 = x1;
   this.y1 = y1;
-};
+}
 
-var tree_find = function(x, y, radius) {
+function tree_find(x, y, radius) {
   var data,
       x0 = this._x0,
       y0 = this._y0,
@@ -239,9 +223,9 @@ var tree_find = function(x, y, radius) {
   }
 
   return data;
-};
+}
 
-var tree_remove = function(d) {
+function tree_remove(d) {
   if (isNaN(x = +this._x.call(null, d)) || isNaN(y = +this._y.call(null, d))) return this; // ignore invalid points
 
   var parent,
@@ -297,26 +281,26 @@ var tree_remove = function(d) {
   }
 
   return this;
-};
+}
 
 function removeAll(data) {
   for (var i = 0, n = data.length; i < n; ++i) this.remove(data[i]);
   return this;
 }
 
-var tree_root = function() {
+function tree_root() {
   return this._root;
-};
+}
 
-var tree_size = function() {
+function tree_size() {
   var size = 0;
   this.visit(function(node) {
     if (!node.length) do ++size; while (node = node.next)
   });
   return size;
-};
+}
 
-var tree_visit = function(callback) {
+function tree_visit(callback) {
   var quads = [], q, node = this._root, child, x0, y0, x1, y1;
   if (node) quads.push(new Quad(node, this._x0, this._y0, this._x1, this._y1));
   while (q = quads.pop()) {
@@ -329,9 +313,9 @@ var tree_visit = function(callback) {
     }
   }
   return this;
-};
+}
 
-var tree_visitAfter = function(callback) {
+function tree_visitAfter(callback) {
   var quads = [], next = [], q;
   if (this._root) quads.push(new Quad(this._root, this._x0, this._y0, this._x1, this._y1));
   while (q = quads.pop()) {
@@ -349,23 +333,23 @@ var tree_visitAfter = function(callback) {
     callback(q.node, q.x0, q.y0, q.x1, q.y1);
   }
   return this;
-};
+}
 
 function defaultX(d) {
   return d[0];
 }
 
-var tree_x = function(_) {
+function tree_x(_) {
   return arguments.length ? (this._x = _, this) : this._x;
-};
+}
 
 function defaultY(d) {
   return d[1];
 }
 
-var tree_y = function(_) {
+function tree_y(_) {
   return arguments.length ? (this._y = _, this) : this._y;
-};
+}
 
 function quadtree(nodes, x, y) {
   var tree = new Quadtree(x == null ? defaultX : x, y == null ? defaultY : y, NaN, NaN, NaN, NaN);
