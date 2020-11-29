@@ -178,6 +178,11 @@ pre {
   margin: 2em 0 2em -20px;
 }
 
+aside ul {
+  padding-left: 0;
+  margin: 0;
+}
+
 .html .string,
 .javascript .string,
 .javascript .regexp {
@@ -211,7 +216,7 @@ pre {
 <div class="column">
 <header>
   <b><a href="./">Overview</a></b>
-  <a style="margin-left:1em;" href="https://github.com/d3/d3/wiki/Gallery">Examples</a>
+  <a style="margin-left:1em;" href="https://observablehq.com/@d3/gallery">Examples</a>
   <a style="margin-left:1em;" href="https://github.com/d3/d3/wiki">Documentation</a>
   <a style="margin-left:1em;" href="https://github.com/d3/d3/blob/master/API.md">API</a>
   <a style="margin-left:1em;" href="https://github.com/d3/d3">Source</a>
@@ -269,14 +274,11 @@ pre {
 </a>
 
 
-<script src="d3.v5.min.js" charset="utf-8"></script>
+<script src="d3.v6.min.js" charset="utf-8"></script>
 <script>
 
 /* https://github.com/d3/d3-plugins/tree/master/hexbin Copyright 2013 Michael Bostock. */
 !function(){d3.hexbin=function(){function u(n){var r={};return n.forEach(function(n,t){var a=s.call(u,n,t)/o,e=Math.round(a),c=h.call(u,n,t)/i-(1&e?.5:0),f=Math.round(c),l=a-e;if(3*Math.abs(l)>1){var v=c-f,g=f+(f>c?-1:1)/2,m=e+(e>a?-1:1),M=c-g,d=a-m;v*v+l*l>M*M+d*d&&(f=g+(1&e?1:-1)/2,e=m)}var j=f+"-"+e,p=r[j];p?p.push(n):(p=r[j]=[n],p.i=f,p.j=e,p.x=(f+(1&e?.5:0))*i,p.y=e*o)}),d3.values(r)}function a(r){var t=0,u=0;return n.map(function(n){var a=Math.sin(n)*r,e=-Math.cos(n)*r,i=a-t,o=e-u;return t=a,u=e,[i,o]})}var e,i,o,c=1,f=1,h=r,s=t;return u.x=function(n){return arguments.length?(h=n,u):h},u.y=function(n){return arguments.length?(s=n,u):s},u.hexagon=function(n){return arguments.length<1&&(n=e),"m"+a(n).join("l")+"z"},u.centers=function(){for(var n=[],r=0,t=!1,u=0;f+e>r;r+=o,t=!t,++u)for(var a=t?i/2:0,h=0;c+i/2>a;a+=i,++h){var s=[a,r];s.i=h,s.j=u,n.push(s)}return n},u.mesh=function(){var n=a(e).slice(0,4).join("l");return u.centers().map(function(r){return"M"+r+"m"+n}).join("")},u.size=function(n){return arguments.length?(c=+n[0],f=+n[1],u):[c,f]},u.radius=function(n){return arguments.length?(e=+n,i=2*e*Math.sin(Math.PI/3),o=1.5*e,u):e},u.radius(1)};var n=d3.range(0,2*Math.PI,Math.PI/3),r=function(n){return n[0]},t=function(n){return n[1]}}();
-
-/* https://github.com/davidbau/seedrandom Copyright 2013 David Bau. */
-(function(a,b,c,d,e,f){function k(a){var b,c=a.length,e=this,f=0,g=e.i=e.j=0,h=e.S=[];for(c||(a=[c++]);d>f;)h[f]=f++;for(f=0;d>f;f++)h[f]=h[g=j&g+a[f%c]+(b=h[f])],h[g]=b;(e.g=function(a){for(var b,c=0,f=e.i,g=e.j,h=e.S;a--;)b=h[f=j&f+1],c=c*d+h[j&(h[f]=h[g=j&g+b])+(h[g]=b)];return e.i=f,e.j=g,c})(d)}function l(a,b){var e,c=[],d=(typeof a)[0];if(b&&"o"==d)for(e in a)try{c.push(l(a[e],b-1))}catch(f){}return c.length?c:"s"==d?a:a+"\0"}function m(a,b){for(var d,c=a+"",e=0;c.length>e;)b[j&e]=j&(d^=19*b[j&e])+c.charCodeAt(e++);return o(b)}function n(c){try{return a.crypto.getRandomValues(c=new Uint8Array(d)),o(c)}catch(e){return[+new Date,a,a.navigator.plugins,a.screen,o(b)]}}function o(a){return String.fromCharCode.apply(0,a)}var g=c.pow(d,e),h=c.pow(2,f),i=2*h,j=d-1;c.seedrandom=function(a,f){var j=[],p=m(l(f?[a,o(b)]:0 in arguments?a:n(),3),j),q=new k(j);return m(o(q.S),b),c.random=function(){for(var a=q.g(e),b=g,c=0;h>a;)a=(a+c)*d,b*=d,c=q.g(1);for(;a>=i;)a/=2,b/=2,c>>>=1;return(a+c)/b},p},m(c.random(),b)})(this,[],Math,256,6,52);
 
 var data = [
 {title: "Radial Tidy Tree", url: "https://observablehq.com/@d3/radial-tidy-tree"},
@@ -289,10 +291,10 @@ var data = [
 {title: "Map Projection Transitions", url: "https://www.jasondavies.com/maps/transition/"},
 {title: "Across U.S. Companies, Tax Rates Vary Greatly", url: "http://www.nytimes.com/interactive/2013/05/25/sunday-review/corporate-taxes.html"},
 {title: "Rotating Voronoi", url: "https://observablehq.com/@mbostock/rotating-voronoi"},
-{title: "Zoomable Geography", url: "https://bl.ocks.org/mbostock/2374239"},
+{title: "Zoomable Geography", url: "https://observablehq.com/@d3/zoom-to-bounding-box"},
 {title: "Fisheye Distortion", url: "https://bost.ocks.org/mike/fisheye/"},
 {title: "Geodesic Rainbow", url: "https://observablehq.com/@mbostock/geodesic-rainbow"},
-{title: "Hierarchical Bar Chart", url: "https://bl.ocks.org/mbostock/1283663"},
+{title: "Hierarchical Bar Chart", url: "https://observablehq.com/@d3/hierarchical-bar-chart"},
 {title: "Exoplanets", url: "https://observablehq.com/@mbostock/exoplanets"},
 {title: "Crossfilter", url: "http://square.github.io/crossfilter/"},
 {title: "Alaska’s villages on the frontline of climate change", url: "http://www.guardian.co.uk/environment/interactive/2013/may/14/alaska-villages-frontline-global-warming"},
@@ -302,7 +304,7 @@ var data = [
 {title: "Reprojected Raster Tiles", url: "https://www.jasondavies.com/maps/raster/"},
 {title: "Hive Plots", url: "https://bost.ocks.org/mike/hive/"},
 {title: "Donut Transitions", url: "https://bl.ocks.org/mbostock/4341417"},
-{title: "Non-Contiguous Cartogram", url: "https://bl.ocks.org/mbostock/4055908"},
+{title: "Non-Contiguous Cartogram", url: "https://observablehq.com/@d3/non-contiguous-cartogram"},
 {title: "Tadpoles", url: "https://observablehq.com/@mbostock/tadpoles"},
 {title: "Zoomable Circle Packing", url: "https://observablehq.com/@d3/zoomable-circle-packing"},
 {title: "Transform Transitions", url: "https://bl.ocks.org/mbostock/1345853"},
@@ -314,7 +316,7 @@ var data = [
 {title: "Force-Directed Graph", url: "https://observablehq.com/@d3/force-directed-graph"},
 {title: "Zoomable Icicle", url: "https://observablehq.com/@d3/zoomable-icicle"},
 {title: "Collision Detection", url: "https://bl.ocks.org/mbostock/3231298"},
-{title: "Waterman Butterfly", url: "https://bl.ocks.org/mbostock/4458497"},
+{title: "Waterman Butterfly", url: "https://observablehq.com/@d3/watermans-butterfly"},
 {title: "Airocean projection", url: "https://observablehq.com/@fil/airocean-projection"},
 {title: "Countries by Area", url: "https://www.jasondavies.com/maps/countries-by-area/"},
 {title: "Zoomable Sunburst", url: "https://observablehq.com/@d3/zoomable-sunburst"},
@@ -322,14 +324,14 @@ var data = [
 {title: "Fisher–Yates Shuffle", url: "https://bost.ocks.org/mike/shuffle/"},
 {title: "Sphere Spirals", url: "https://www.jasondavies.com/maps/sphere-spirals/"},
 {title: "World Tour", url: "https://observablehq.com/@mbostock/world-tour"},
-{title: "Zoomable Treemaps", url: "https://bost.ocks.org/mike/treemap/"},
-{title: "Clipped Map Tiles", url: "https://bl.ocks.org/mbostock/4150951"},
+{title: "Zoomable Treemaps", url: "https://observablehq.com/@d3/zoomable-treemap"},
+{title: "Clipped Map Tiles", url: "https://observablehq.com/@d3/clipped-map-tiles"},
 {title: "Horizon Chart", url: "https://observablehq.com/@d3/horizon-chart"},
 {title: "Voronoi Labels", url: "https://observablehq.com/@mbostock/d3-voronoi-labels"},
 {title: "Hexbin Map", url: "https://observablehq.com/@d3/hexbin-map"},
 {title: "OMG Particles!", url: "https://bl.ocks.org/mbostock/1062544"},
 {title: "Calendar View", url: "https://observablehq.com/@d3/calendar-view"},
-{title: "The Wealth & Health of Nations", url: "https://bost.ocks.org/mike/nations/"},
+{title: "The Wealth & Health of Nations", url: "https://observablehq.com/@mbostock/the-wealth-health-of-nations"},
 {title: "Collapsible Tree", url: "https://observablehq.com/@d3/collapsible-tree"},
 {title: "Hexagonal Binning", url: "https://observablehq.com/@d3/hexbin"},
 {title: "Over the Decades, How States Have Shifted", url: "http://www.nytimes.com/interactive/2012/10/15/us/politics/swing-history.html"},
@@ -340,9 +342,9 @@ var data = [
 {title: "The state of our union is … dumber", url: "http://www.guardian.co.uk/world/interactive/2013/feb/12/state-of-the-union-reading-level"},
 {title: "Chord Dependency Diagram", url: "https://observablehq.com/@d3/chord-dependency-diagram"},
 {title: "Floating Landmasses", url: "https://observablehq.com/@mbostock/floating-landmasses"},
-{title: "How the Tax Burden Has Changed", url: "http://www.nytimes.com/interactive/2012/11/30/us/tax-burden.html"},
+{title: "Parallel Coordinates", url: "https://observablehq.com/@d3/parallel-coordinates"},
 {title: "Prime Number Patterns", url: "https://www.jasondavies.com/primos/"},
-{title: "Koalas to the Max", url: "http://www.koalastothemax.com/"},
+{title: "Owls to the Max", url: "https://observablehq.com/@mbostock/owls-to-the-max"},
 {title: "Constellations of Directors and Their Stars", url: "http://www.nytimes.com/newsgraphics/2013/09/07/director-star-chart/index.html"},
 {title: "Drought and Deluge in the Lower 48", url: "http://www.nytimes.com/interactive/2012/08/11/sunday-review/drought-history.html"},
 {title: "Animated Bézier Curves", url: "https://www.jasondavies.com/animated-bezier/"},
@@ -363,20 +365,20 @@ var data = [
 {title: "Gilbert’s Two-World Perspective", url: "https://www.jasondavies.com/maps/gilbert/"},
 {title: "For Eli Manning, 150 Games and Counting", url: "http://www.nytimes.com/newsgraphics/2013/09/28/eli-manning-milestone/index.html"},
 {title: "Word Tree", url: "https://www.jasondavies.com/wordtree/"},
-{title: "Mobile Patent Suits", url: "https://bl.ocks.org/mbostock/1153292"},
-{title: "Mitchell’s Best-Candidate", url: "https://bl.ocks.org/mbostock/1893974"},
+{title: "Mobile Patent Suits", url: "https://observablehq.com/@mbostock/mobile-patent-suits"},
+{title: "Mitchell’s Best-Candidate", url: "https://observablehq.com/@mbostock/best-candidate-circles"},
 {title: "Sankey Diagrams", url: "https://observablehq.com/@d3/sankey-diagram"},
-{title: "van Wijk Smooth Zooming", url: "https://bl.ocks.org/mbostock/3828981"},
+{title: "van Wijk Smooth Zooming", url: "https://observablehq.com/@d3/smooth-zooming"},
 {title: "Bryce Harper: A swing of beauty", url: "http://www.washingtonpost.com/wp-srv/special/sports/bryce-harper-swing-of-beauty/"},
 {title: "Dissecting a Trailer: The Parts of the Film That Make the Cut", url: "http://www.nytimes.com/interactive/2013/02/19/movies/awardsseason/oscar-trailers.html"},
-{title: "Violence and guns in best-selling video games", url: "http://www.guardian.co.uk/world/interactive/2013/apr/30/violence-guns-best-selling-video-games"},
+{title: "Bar Chart Race, Explained", url: "https://observablehq.com/@d3/bar-chart-race-explained"},
 {title: "Hierarchical Edge Bundling", url: "https://observablehq.com/@d3/hierarchical-edge-bundling"},
 {title: "Geographic Bounding Boxes", url: "https://www.jasondavies.com/maps/bounds/"},
-{title: "Live Results: Massachusetts Senate Special Election", url: "http://elections.huffingtonpost.com/2013/massachusetts-senate-results"},
-{title: "Zoomable Map Tiles", url: "https://bl.ocks.org/mbostock/4132797"},
+{title: "Mona Lisa Histogram", url: "https://observablehq.com/@d3/mona-lisa-histogram"},
+{title: "Zoomable Map Tiles", url: "https://observablehq.com/@d3/zoomable-map-tiles"},
 {title: "D3 Show Reel", url: "https://bl.ocks.org/mbostock/1256572"},
 {title: "Building Hamiltonian Graphs from LCF Notation", url: "http://christophermanning.org/projects/building-cubic-hamiltonian-graphs-from-lcf-notation"},
-{title: "Sequences sunburst", url: "https://bl.ocks.org/kerryrodden/766f8f6d31f645c39f488a0befa1e3c8"},
+{title: "Sequences sunburst", url: "https://observablehq.com/@kerryrodden/sequences-sunburst"},
 {title: "Azimuth and Distance from London", url: "https://www.jasondavies.com/maps/azimuth-distance/"},
 {title: "Parallel Sets", url: "https://www.jasondavies.com/parallel-sets/"}
 ];
@@ -386,9 +388,7 @@ data.forEach(function(d, i) {
   d.j = i / 10 | 0;
 });
 
-Math.seedrandom(+d3.timeHour(new Date));
-
-d3.shuffle(data);
+d3.shuffler(d3.randomLcg(d3.utcHour()))(data);
 
 var height = 460,
     imageWidth = 132,
@@ -433,7 +433,7 @@ var anchor = svg.append("g")
 var graphic = deep.selectAll("svg,canvas");
 
 var image = new Image;
-image.src = "ex.jpg?3f2d00ffdba6ced9c50f02ed42f12f6156368bd2";
+image.src = "ex.jpg?ddcbcae235e360c7d01311163440cb88";
 image.onload = resized;
 
 d3.select(window)
@@ -501,8 +501,8 @@ function resized() {
       .attr("transform", function(d) { return "translate(" + d + ")"; });
 }
 
-function mousemoved() {
-  var m = d3.mouse(this);
+function mousemoved(event) {
+  var m = d3.pointer(event);
 
   desiredFocus = [
     Math.round((m[0] - innerWidth / 2) / depth) * depth + innerWidth / 2,
@@ -524,7 +524,35 @@ function moved() {
 
 <div class="column">
 
-<p><aside>See <a href="https://github.com/d3/d3/wiki/Gallery">more examples</a>.</aside>
+<aside>
+  <ul>
+    <li style="list-style-image: url('icon-observable.svg');">
+      <a href="https://observablehq.com/@d3/gallery" title="D3 Gallery">
+        See more examples
+      </a>
+    </li>
+    <li style="list-style-image: url('icon-slack.svg');">
+      <a href="https://d3-slackin.herokuapp.com/" title="D3 Slack">
+        Chat with the community
+      </a>
+    </li>
+    <li style="list-style-image: url('icon-twitter.svg');">
+      <a href="https://twitter.com/d3js_org" title="D3 Twitter">
+        Follow announcements
+      </a>
+    </li>
+    <li style="list-style-image: url('icon-github.svg');">
+      <a href="https://github.com/d3/d3" title="D3 GitHub">
+        Report a bug
+      </a>
+    </li>
+    <li style="list-style-image: url('icon-stackoverflow.svg');">
+      <a href="https://stackoverflow.com/questions/tagged/d3.js" title="D3 Stack Overflow">
+        Ask for help
+      </a>
+    </li>
+  </ul>
+</aside>
 
 <p><b>D3.js</b> is a JavaScript library for manipulating documents based on data. <b>D3</b> helps you bring data to life using HTML, SVG, and CSS. D3’s emphasis on web standards gives you the full capabilities of modern browsers without tying yourself to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation.
 
@@ -543,13 +571,13 @@ d3.select("#version").text(" (" + d3.version + ")");
 
 <p>To link directly to the latest release, copy this snippet:
 
-<pre><code class="html">&lt;script src="https://d3js.org/d3.v5.min.js">&lt;/script></code></pre>
+<pre><code class="html">&lt;script src="https://d3js.org/d3.v6.min.js">&lt;/script></code></pre>
 
 <p>The <a href="https://github.com/d3/d3">full source and tests</a> are also available <a href="https://github.com/d3/d3/zipball/master">for download</a> on GitHub.
 
 <h2><a name="introduction" href="#introduction">#</a>Introduction</h2>
 
-<p><aside>Read <a href="https://github.com/d3/d3/wiki/Tutorials">more tutorials</a>.</aside>
+<aside>Read <a href="https://github.com/d3/d3/wiki/Tutorials">more tutorials</a>.</aside>
 
 <p><b>D3</b> allows you to bind arbitrary data to a Document Object Model (DOM), and then apply data-driven transformations to the document. For example, you can use D3 to generate an HTML table from an array of numbers. Or, use the same data to create an interactive SVG bar chart with smooth transitions and interaction.
 
@@ -557,7 +585,7 @@ d3.select("#version").text(" (" + d3.version + ")");
 
 <h2><a name="selections" href="#selections">#</a>Selections</h2>
 
-<p><aside>Read <a href="https://github.com/d3/d3-selection">more about selections</a>.</aside>
+<aside>Read <a href="https://github.com/d3/d3-selection">more about selections</a>.</aside>
 
 <p>Modifying documents using the <a href="https://www.w3.org/DOM/DOMTR">W3C DOM API</a> is tedious: the method names are verbose, and the imperative approach requires manual iteration and bookkeeping of temporary state. For example, to change the text color of paragraph elements:
 
@@ -605,7 +633,7 @@ for (var i = 0; i &lt; paragraphs.length; i++) {
 
 <h2><a name="enter-exit" href="#enter-exit">#</a>Enter and Exit</h2>
 
-<p><aside>Read <a href="https://bost.ocks.org/mike/join/">more about data joins</a>.</aside>
+<aside>Read <a href="https://bost.ocks.org/mike/join/">more about data joins</a>.</aside>
 
 <p>Using D3’s <i>enter</i> and <i>exit</i> selections, you can create new nodes for incoming data and remove outgoing nodes that are no longer needed.
 
@@ -663,7 +691,7 @@ p.exit().remove();</code></pre>
 <p>Want to learn more? Read <a href="https://github.com/d3/d3/wiki/Tutorials">these tutorials</a>.
 
 <footer>
-  Library released under <a href="https://opensource.org/licenses/BSD-3-Clause">BSD license</a>. Copyright 2019 <a href="https://bost.ocks.org/mike/" rel="author">Mike Bostock</a>.
+  Library released under <a href="https://opensource.org/licenses/BSD-3-Clause">BSD license</a>. Copyright 2020 <a href="https://bost.ocks.org/mike/" rel="author">Mike Bostock</a>.
 </footer>
 
 </div>
